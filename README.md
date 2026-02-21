@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GCMS Core - Global Conflict Monitoring System
 
-## Getting Started
+A production-ready Real-Time Global Conflict Monitoring System built with Next.js 14, Firebase, and OpenAI.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Real-time Tactical UI**: Dark mode, neon accents, grid overlays, and smooth animations.
+- **Global Map**: Interactive Leaflet map with pulsing severity markers.
+- **Live Intel Feed**: Real-time updates of conflict events.
+- **Analytics Dashboard**: Threat assessment charts and trend analysis.
+- **AI-Powered**: Automated summarization and severity scoring using OpenAI (GPT-4o).
+- **Free-Tier Compatible**: Designed to run on Firebase Spark plan (with external API limits).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: Next.js (App Router), TailwindCSS, Framer Motion, Recharts, Leaflet.
+- **Backend**: Firebase Cloud Functions (Node.js), Firestore.
+- **AI**: OpenAI API.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Setup Instructions
 
-## Learn More
+1.  **Navigate to Project Directory**
+    ```bash
+    cd gcms-core
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+2.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3.  **Environment Variables**
+    Create a `.env.local` file in the root directory:
+    ```env
+    NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+    NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4.  **Run Development Server**
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
-## Deploy on Vercel
+## ☁️ Cloud Functions Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1.  **Navigate to functions directory**
+    ```bash
+    cd functions
+    npm install
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2.  **Set OpenAI Key**
+    ```bash
+    firebase functions:secrets:set OPENAI_API_KEY
+    ```
+
+3.  **Deploy**
+    ```bash
+    firebase deploy --only functions
+    ```
+
+## 🔐 Security Notes
+
+-   **API Keys**: Never commit your `.env.local` file.
+-   **Firestore Rules**: Ensure your Firestore rules restrict write access to admin only.
+-   **Cloud Functions**: The ingestion function is scheduled. Ensure your billing account is linked for external API calls (Blaze plan required for external network requests in Cloud Functions, though Spark allows Google services).
+
+## ⚠️ Data Sources
+
+This system is configured to fetch data from:
+-   GDELT Project (GeoJSON API)
+-   ReliefWeb API
+-   ACLED (Requires API Key)
+
+*Note: The current demo uses realistic mock data for immediate visualization.*
+# gcms
