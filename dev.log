@@ -1,0 +1,235 @@
+
+> gcms-core@0.1.0 dev
+> next dev
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/gyan/Documents/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/gyan/Documents/gcms-1/gcms-core/package-lock.json
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.117:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 1190ms
+ GET / 200 in 2.4s (compile: 1486ms, render: 884ms)
+ GET / 200 in 2.4s (compile: 1581ms, render: 818ms)
+ GET / 200 in 471ms (compile: 9ms, render: 463ms)
+ GET / 200 in 365ms (compile: 19ms, render: 346ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 498ms (compile: 87ms, render: 410ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 411ms (compile: 3ms, render: 408ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 377ms (compile: 4ms, render: 373ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 419ms (compile: 1535µs, render: 417ms)
+ GET / 200 in 378ms (compile: 28ms, render: 350ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 516ms (compile: 4ms, render: 513ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 452ms (compile: 13ms, render: 439ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 568ms (compile: 8ms, render: 559ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 511ms (compile: 7ms, render: 503ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 605ms (compile: 4ms, render: 600ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 444ms (compile: 6ms, render: 438ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 476ms (compile: 16ms, render: 459ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 383ms (compile: 4ms, render: 380ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 430ms (compile: 9ms, render: 421ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 1819ms (compile: 353ms, render: 1466ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 1246ms (compile: 172ms, render: 1074ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 3.6s (compile: 38ms, render: 3.6s)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 540ms (compile: 8ms, render: 532ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 528ms (compile: 11ms, render: 516ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 401ms (compile: 3ms, render: 398ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 388ms (compile: 3ms, render: 384ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 413ms (compile: 5ms, render: 407ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 485ms (compile: 10ms, render: 475ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 476ms (compile: 4ms, render: 472ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 397ms (compile: 5ms, render: 392ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 586ms (compile: 4ms, render: 583ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 455ms (compile: 9ms, render: 446ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 448ms (compile: 2ms, render: 445ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 413ms (compile: 3ms, render: 409ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 533ms (compile: 4ms, render: 529ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 565ms (compile: 15ms, render: 550ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 425ms (compile: 10ms, render: 414ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 400ms (compile: 6ms, render: 395ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 453ms (compile: 4ms, render: 449ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 519ms (compile: 13ms, render: 506ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 450ms (compile: 5ms, render: 445ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 405ms (compile: 4ms, render: 401ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 448ms (compile: 13ms, render: 435ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 420ms (compile: 4ms, render: 416ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 376ms (compile: 4ms, render: 372ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 498ms (compile: 16ms, render: 481ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 375ms (compile: 4ms, render: 371ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 419ms (compile: 5ms, render: 414ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 522ms (compile: 9ms, render: 513ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 404ms (compile: 5ms, render: 399ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 357ms (compile: 3ms, render: 354ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 556ms (compile: 10ms, render: 546ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 489ms (compile: 6ms, render: 483ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 365ms (compile: 4ms, render: 362ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 522ms (compile: 19ms, render: 503ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 378ms (compile: 4ms, render: 374ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 404ms (compile: 5ms, render: 400ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 501ms (compile: 10ms, render: 491ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 361ms (compile: 3ms, render: 358ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 531ms (compile: 4ms, render: 527ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 555ms (compile: 27ms, render: 528ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 401ms (compile: 3ms, render: 398ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 447ms (compile: 3ms, render: 444ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 540ms (compile: 13ms, render: 527ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 397ms (compile: 8ms, render: 389ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 379ms (compile: 8ms, render: 371ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 551ms (compile: 60ms, render: 491ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 496ms (compile: 6ms, render: 490ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 409ms (compile: 6ms, render: 404ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 508ms (compile: 2ms, render: 506ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 546ms (compile: 13ms, render: 533ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 397ms (compile: 3ms, render: 394ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 453ms (compile: 3ms, render: 449ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 477ms (compile: 5ms, render: 471ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 371ms (compile: 3ms, render: 368ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 767ms (compile: 9ms, render: 759ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 739ms (compile: 3ms, render: 735ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 380ms (compile: 3ms, render: 376ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 502ms (compile: 7ms, render: 495ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 492ms (compile: 1760µs, render: 490ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 412ms (compile: 4ms, render: 408ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 465ms (compile: 4ms, render: 461ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 513ms (compile: 8ms, render: 506ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 378ms (compile: 3ms, render: 376ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 486ms (compile: 11ms, render: 475ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 426ms (compile: 7ms, render: 419ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 369ms (compile: 3ms, render: 366ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 571ms (compile: 11ms, render: 561ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 413ms (compile: 3ms, render: 409ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 389ms (compile: 5ms, render: 384ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 503ms (compile: 12ms, render: 491ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 376ms (compile: 4ms, render: 371ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 420ms (compile: 3ms, render: 417ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 526ms (compile: 10ms, render: 515ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 383ms (compile: 4ms, render: 379ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 430ms (compile: 6ms, render: 425ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 423ms (compile: 11ms, render: 412ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 423ms (compile: 5ms, render: 418ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 396ms (compile: 3ms, render: 393ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 581ms (compile: 39ms, render: 542ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 445ms (compile: 4ms, render: 441ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 375ms (compile: 2ms, render: 372ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 536ms (compile: 42ms, render: 495ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 399ms (compile: 5ms, render: 394ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 393ms (compile: 3ms, render: 390ms)
+✓ Compiled in 302ms
+✓ Compiled in 50ms
+✓ Compiled in 48ms
+✓ Compiled in 280ms
+ GET / 200 in 414ms (compile: 110ms, render: 304ms)
+ GET / 200 in 29ms (compile: 3ms, render: 27ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 503ms (compile: 6ms, render: 497ms)
+ACLED API returned no data or error: { message: 'Access denied' }
+ GET /api/acled 200 in 360ms (compile: 2ms, render: 357ms)
+ GET / 200 in 195ms (compile: 103ms, render: 92ms)
+ GET / 200 in 43ms (compile: 1999µs, render: 41ms)
+ GET / 200 in 31ms (compile: 4ms, render: 27ms)
+[?25h

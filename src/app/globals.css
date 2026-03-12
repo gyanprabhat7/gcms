@@ -1,26 +1,117 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Sentinel Semantic Tokens */
+  --color-background: var(--void-black);
+  --color-foreground: var(--clean-slate);
+  --color-card: var(--glass-panel);
+  --color-border: var(--neon-blue-dim);
+  
+  --color-primary: var(--neon-blue);
+  --color-primary-fg: var(--void-black);
+  
+  --color-secondary: var(--tactical-teal);
+  --color-secondary-fg: var(--void-black);
+  
+  --color-alert: var(--alert-red);
+  
+  /* Tactical Specifics */
+  --color-void-black: #050505;
+  --color-glass-panel: rgba(10, 15, 20, 0.75);
+  --color-neon-blue: #00F0FF;
+  --color-neon-blue-dim: rgba(0, 240, 255, 0.3);
+  --color-tactical-teal: #00FF9F;
+  --color-alert-red: #FF2A2A;
+  --color-clean-slate: #E2E8F0;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Animation Tokens */
+  --animate-radar: radar-spin 4s linear infinite;
+  --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-scanline: scanline 8s linear infinite;
+  
+  @keyframes radar-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.05); }
+  }
+
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
   }
 }
 
+@utility animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+@utility glass-panel {
+  background: var(--glass-panel);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--neon-blue-dim);
+}
+
+:root {
+  /* Default: Sentinel Dark (No Light Mode for Classified Ops) */
+  --void-black: #050505;
+  --clean-slate: #E2E8F0;
+  --glass-panel: rgba(10, 15, 20, 0.75);
+  --neon-blue: #00F0FF;
+  --neon-blue-dim: rgba(0, 240, 255, 0.2);
+  --tactical-teal: #00FF9F;
+  --alert-red: #FF2A2A;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--void-black);
+  color: var(--clean-slate);
+  font-family: 'Geist Mono', monospace; /* Default to Monospace for Tactical Feel */
+  overflow: hidden; 
+}
+
+/* Tactical Grid Background */
+.tactical-grid {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+  background: var(--neon-blue-dim); 
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-blue); 
+}
+
+/* Leaflet Overrides for Sentinel Theme */
+.leaflet-container {
+  background: #050505 !important;
+  font-family: inherit;
+}
+.leaflet-popup-content-wrapper {
+  background: rgba(5, 5, 5, 0.9);
+  border: 1px solid var(--neon-blue);
+  color: var(--clean-slate);
+  border-radius: 0;
+  backdrop-filter: blur(4px);
+}
+.leaflet-popup-tip {
+  background: var(--neon-blue);
 }
