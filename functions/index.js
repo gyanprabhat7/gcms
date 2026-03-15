@@ -80,9 +80,8 @@ exports.checkAlerts = onDocumentCreated("incidents/{incidentId}", async (event) 
 
 async function fetchGDELT() {
   try {
-    // Fetching last 15 mins of GDELT updates (CSV format usually, simplified here)
-    // using the GDELT GeoJSON API for easier parsing
-    const response = await axios.get("https://api.gdeltproject.org/api/v2/geo/geo?query=theme:ARMEDCONFLICT&format=geojson");
+    // Using the GDELT GeoJSON API V1
+    const response = await axios.get("https://api.gdeltproject.org/api/v1/gkg_geojson?QUERY=ARMEDCONFLICT&TIMESPAN=60");
     
     if (!response.data || !response.data.features) return [];
 
@@ -92,8 +91,8 @@ async function fetchGDELT() {
       text: f.properties.name,
       lat: f.geometry.coordinates[1],
       lng: f.geometry.coordinates[0],
-      timestamp: new Date().toISOString(),
-      country: f.properties.countryname || "Unknown"
+      timestamp: f.properties.urlpubtimedate || new Date().toISOString(),
+      country: f.properties.name || "Unknown"
     }));
   } catch (e) {
     logger.error("GDELT Fetch Error", e);

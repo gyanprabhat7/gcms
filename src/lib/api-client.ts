@@ -18,12 +18,10 @@ export interface Incident {
 }
 
 // STRICT: English only, high-confidence conflict events, last 24h
-const GDELT_API = "https://api.gdeltproject.org/api/v2/geo/geo?query=theme:ARMEDCONFLICT sourcelang:eng&format=geojson&timespan=24h";
-
 export const fetchLiveIncidents = async (): Promise<Incident[]> => {
   try {
     const [gdeltData, acledData] = await Promise.all([
-      fetchGDELT(),
+      fetchGDELTProxy(),
       fetchACLEDProxy()
     ]);
 
@@ -50,58 +48,15 @@ async function fetchACLEDProxy(): Promise<Incident[]> {
   }
 }
 
-async function fetchGDELT(): Promise<Incident[]> {
+async function fetchGDELTProxy(): Promise<Incident[]> {
   try {
-    const res = await fetch(GDELT_API);
+    const res = await fetch('/api/gdelt');
+    if (!res.ok) return [];
     const data = await res.json();
-    
-    if (!data.features) return [];
-
-    return data.features.map((f: any) => {
-      // GDELT GeoJSON 'name' is often the location/country.
-      const locationName = f.properties.name || "Unknown Location";
-      
-      // Extract summary and URL from HTML snippet
-      let summary = locationName;
-      let url = f.properties.url; // Default URL
-      let sourceName = "GDELT";
-
-      if (f.properties.html) {
-        // Extract Title
-        const titleMatch = f.properties.html.match(/title="([^"]+)"/);
-        if (titleMatch) summary = titleMatch[1];
-        
-        // Extract URL (Robust)
-        const urlMatch = f.properties.html.match(/href="([^"]+)"/);
-        if (urlMatch) url = urlMatch[1];
-
-        // Attempt to extract domain as source name
-        if (url) {
-          try {
-            const domain = new URL(url).hostname.replace('www.', '');
-            sourceName = domain.toUpperCase();
-          } catch (e) {}
-        }
-      }
-
-      // Filter out non-English looking summaries (heuristic) if API filter leaks
-      // (Simple check: if contains mostly non-ascii, skip? GDELT API 'sourcelang:eng' usually handles this)
-
-      return {
-        id: `gdelt-${f.properties.url || Math.random().toString(36).substr(2, 9)}`,
-        lat: f.geometry.coordinates[1],
-        lng: f.geometry.coordinates[0],
-        type: 'Conflict',
-        severity: 50, // Baseline for GDELT
-        summary: summary,
-        source: sourceName,
-        timestamp: new Date().toISOString(),
-        country: locationName,
-        url: url
-      };
-    });
+    if (!Array.isArray(data)) return [];
+    return data;
   } catch (e) {
-    console.warn("GDELT fetch failed", e);
+    console.warn("GDELT Proxy fetch failed.", e);
     return [];
   }
 }

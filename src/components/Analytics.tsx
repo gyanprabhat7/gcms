@@ -6,6 +6,8 @@ import { Incident } from '@/lib/api-client';
 import { AreaChart, Area, ResponsiveContainer, XAxis } from 'recharts';
 import SitrepGenerator from './SitrepGenerator';
 
+import { useStore } from '@/lib/store';
+
 interface AnalyticsProps {
   incidents: Incident[];
 }
@@ -34,6 +36,8 @@ function StatCard({ label, value, subtext, icon: Icon, color = "primary", trend 
 }
 
 export default function Analytics({ incidents }: AnalyticsProps) {
+  const { selectIncident } = useStore();
+
   // Compute Stats Dynamically
   const stats = useMemo(() => {
     if (!incidents.length) return null;

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 let ACLED_TOKEN: string | null = null;
 let TOKEN_EXPIRY: number = 0;
 
