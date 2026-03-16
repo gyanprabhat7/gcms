@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Sidebar from '@/components/Sidebar';
 import TopBar from '@/components/TopBar';
@@ -9,32 +9,32 @@ import AuthWrapper from '@/components/auth/AuthWrapper';
 import TacticalChat from '@/components/TacticalChat';
 import EscalationIndex from '@/components/EscalationIndex';
 import EconomicImpact from '@/components/EconomicImpact';
-import { fetchLiveIncidents, Incident } from '@/lib/api-client';
+import { fetchLiveIncidents } from '@/lib/api-client';
 import { useStore } from '@/lib/store';
-import { toast } from 'sonner';
 
 const Map = dynamic(() => import('@/components/Map'), { ssr: false });
 
 export default function Home() {
-  const { incidents, setIncidents } = useStore();
+  const { incidents, mergeIncidents } = useStore();
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
     async function loadData() {
-      const data = await fetchLiveIncidents();
-      setIncidents(data);
-
-      // Check for new critical alerts
-      data.forEach(incident => {
-        if (incident.severity > 90) {
-          // Simple check: In production we'd track seen IDs to avoid dupes
-          // For now, we assume data refresh logic handles it or we accept re-alert on reload
-        }
-      });
+      // Fetch 24 hours on first load, then only fetch the last 15 minutes of data on subsequent polls
+      const timespan = isInitialLoad.current ? 1440 : 15;
+      const data = await fetchLiveIncidents(timespan);
+      
+      // Merge unique data instead of blindly overwriting
+      mergeIncidents(data);
+      isInitialLoad.current = false;
     }
+    
     loadData();
-    const interval = setInterval(loadData, 300000);
+    
+    // Check for updates every 60 seconds (5 seconds is too aggressive and will get you IP banned by APIs)
+    const interval = setInterval(loadData, 60000);
     return () => clearInterval(interval);
-  }, [setIncidents]);
+  }, [mergeIncidents]);
 
   return (
     <AuthWrapper>

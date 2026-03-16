@@ -5,16 +5,29 @@ export async function POST(req: Request) {
     const { text } = await req.json();
     if (!text) return NextResponse.json({ error: 'Text required' }, { status: 400 });
 
-    // In a real production scenario, you would use a paid API like Google Cloud Translation
-    // or a free alternative like LibreTranslate. 
-    // For this prototype, we'll use a public-access translation endpoint.
-    const res = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=' + encodeURIComponent(text));
-    const data = await res.json();
+    const textToTranslate = text.slice(0, 1500);
+    const res = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=' + encodeURIComponent(textToTranslate));
     
-    // Extract translated text from Google's response format
-    const translatedText = data[0].map((item: any) => item[0]).join('');
+    const rawText = await res.text();
+    let data;
 
-    return NextResponse.json({ translatedText });
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      return NextResponse.json({ 
+        translatedText: text + '\n\n[TRANSLATION UNAVAILABLE: UPSTREAM RATE LIMIT REACHED]' 
+      });
+    }
+
+    if (!res.ok) {
+      throw new Error(`Upstream API error: ${res.status}`);
+    }
+    
+    const translatedText = data[0].map((item: [string]) => item[0]).join('');
+
+    return NextResponse.json({ 
+      translatedText: translatedText + (text.length > 1500 ? '\n\n[TRUNCATED FOR TRANSLATION LIMITS]' : '') 
+    });
   } catch (error) {
     console.error('Translation failed:', error);
     return NextResponse.json({ error: 'Translation failed' }, { status: 500 });

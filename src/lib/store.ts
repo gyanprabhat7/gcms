@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import { Incident } from '@/lib/api-client';
 
 export interface UserAsset {
@@ -28,17 +27,10 @@ interface AppState {
   selectedIncident: Incident | null;
   selectIncident: (incident: Incident | null) => void;
   
-  // Data State & Persistent Log
+  // Data State
   incidents: Incident[];
   setIncidents: (incidents: Incident[]) => void;
-  
-  // Location Filter
-  locationFilter: string | null;
-  setLocationFilter: (filter: string | null) => void;
-  
-  // Scraped Content Cache
-  scrapedContent: Record<string, string>; // url -> content
-  cacheScrapedContent: (url: string, content: string) => void;
+  mergeIncidents: (newIncidents: Incident[]) => void; // NEW: Robust deduplication
 
   // Asset Management
   assets: UserAsset[];
@@ -52,66 +44,59 @@ interface AppState {
   setMarketSentinelCollapsed: (collapsed: boolean) => void;
 }
 
-export const useStore = create<AppState>()(
-  persist(
-    (set) => ({
-      sidebarOpen: true,
-      activeTab: 'intel',
-      setActiveTab: (tab) => set({ activeTab: tab }),
+export const useStore = create<AppState>((set) => ({
+  sidebarOpen: true,
+  activeTab: 'intel',
+  setActiveTab: (tab) => set({ activeTab: tab }),
 
-      activeLayers: {
-        weather: false,
-        ranges: false,
-        heatmap: true,
-      },
-      toggleLayer: (layer) => set((state) => ({
-        activeLayers: { ...state.activeLayers, [layer]: !state.activeLayers[layer] }
-      })),
+  activeLayers: {
+    weather: false,
+    ranges: false,
+    heatmap: true,
+  },
+  toggleLayer: (layer) => set((state) => ({
+    activeLayers: { ...state.activeLayers, [layer]: !state.activeLayers[layer] }
+  })),
 
-      selectedIncident: null,
-      selectIncident: (incident) => set({ selectedIncident: incident }),
+  selectedIncident: null,
+  selectIncident: (incident) => set({ selectedIncident: incident }),
 
-      incidents: [],
-      setIncidents: (newIncidents) => set((state) => {
-        // Merge new incidents with existing ones, deduplicating by ID
-        const existingIds = new Set(state.incidents.map(i => i.id));
-        const uniqueNew = newIncidents.filter(i => !existingIds.has(i.id));
-        // Keep most recent at the top
-        const combined = [...uniqueNew, ...state.incidents].sort(
-          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-        return { incidents: combined };
-      }),
+  incidents:[],
+  setIncidents: (incidents) => set({ incidents }),
 
-      locationFilter: null,
-      setLocationFilter: (filter) => set({ locationFilter: filter }),
+  // Safely merges new API requests into existing data, ignoring duplicates 
+  // by checking stable IDs, and capping array length to prevent browser crashes.
+  mergeIncidents: (newIncidents) => set((state) => {
+    const existingMap = new Map(state.incidents.map(i =>[i.id, i]));
+    let addedCount = 0;
+    
+    newIncidents.forEach(inc => {
+      if (!existingMap.has(inc.id)) {
+        existingMap.set(inc.id, inc);
+        addedCount++;
+      }
+    });
 
-      scrapedContent: {},
-      cacheScrapedContent: (url, content) => set((state) => ({
-        scrapedContent: { ...state.scrapedContent, [url]: content }
-      })),
+    // Don't trigger a re-render if no new data was fetched
+    if (addedCount === 0) return state;
 
-      assets: [
-        { id: '1', name: 'Main HQ', lat: 28.6139, lng: 77.2090, type: 'office' },
-      ],
-      addAsset: (asset) => set((state) => ({ assets: [...state.assets, asset] })),
-      removeAsset: (id) => set((state) => ({ assets: state.assets.filter(a => a.id !== id) })),
+    // Sort descending and cap at 10,000 maximum map points
+    const mergedAndSorted = Array.from(existingMap.values())
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 10000);
 
-      isExpanded: false,
-      setIsExpanded: (expanded) => set({ isExpanded: expanded }),
-      
-      marketSentinelCollapsed: false,
-      setMarketSentinelCollapsed: (collapsed) => set({ marketSentinelCollapsed: collapsed }),
-    }),
-    {
-      name: 'gcms-intelligence-cache',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ 
-        incidents: state.incidents, 
-        scrapedContent: state.scrapedContent,
-        assets: state.assets,
-        marketSentinelCollapsed: state.marketSentinelCollapsed 
-      }),
-    }
-  )
-);
+    return { incidents: mergedAndSorted };
+  }),
+
+  assets:[
+    { id: '1', name: 'Main HQ', lat: 28.6139, lng: 77.2090, type: 'office' }, 
+  ],
+  addAsset: (asset) => set((state) => ({ assets: [...state.assets, asset] })),
+  removeAsset: (id) => set((state) => ({ assets: state.assets.filter(a => a.id !== id) })),
+
+  isExpanded: false,
+  setIsExpanded: (expanded) => set({ isExpanded: expanded }),
+  
+  marketSentinelCollapsed: false,
+  setMarketSentinelCollapsed: (collapsed) => set({ marketSentinelCollapsed: collapsed }),
+}));

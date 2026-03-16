@@ -35,12 +35,11 @@ export default function EconomicImpact() {
           body: JSON.stringify({ incident: selectedIncident })
         });
         const result = await res.json();
-        // Handle both array direct return or nested in key
         const impacts = result.impacts || result.data || result; 
         if (Array.isArray(impacts)) {
            setData(impacts);
         } else {
-           setData([]); // Fallback
+           setData([]);
         }
       } catch (e) {
         console.error(e);
@@ -62,7 +61,7 @@ export default function EconomicImpact() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className={`fixed bottom-20 left-4 z-50 bg-card/90 border border-primary/30 backdrop-blur-md rounded shadow-2xl overflow-hidden ${marketSentinelCollapsed ? 'w-48 h-10' : 'w-80 h-auto'}`}
+        className={`fixed bottom-20 left-4 z-50 bg-card/90 border border-primary/30 backdrop-blur-md rounded shadow-2xl overflow-hidden ${marketSentinelCollapsed ? 'w-12 h-10' : 'w-80 h-auto'}`}
       >
         <motion.div 
           layout
@@ -71,9 +70,15 @@ export default function EconomicImpact() {
         >
           <div className="flex items-center gap-2 overflow-hidden">
             <DollarSign className="w-4 h-4 text-primary shrink-0" />
-            <h3 className="text-xs font-bold font-mono text-primary flex items-center gap-2 uppercase tracking-tight truncate">
-              MARKET SENTINEL
-            </h3>
+            {!marketSentinelCollapsed && (
+              <motion.h3 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-xs font-bold font-mono text-primary flex items-center gap-2 uppercase tracking-tight truncate"
+              >
+                MARKET SENTINEL
+              </motion.h3>
+            )}
             {loading && <Loader2 className="w-3 h-3 animate-spin text-primary shrink-0" />}
           </div>
           <div className="text-muted-foreground hover:text-white shrink-0">
@@ -106,7 +111,7 @@ export default function EconomicImpact() {
                   </div>
                   <div className="text-[10px] text-foreground/80 mb-1">{item.asset}</div>
                   <div className="text-[9px] text-muted-foreground leading-tight italic">
-                    "{item.reason}"
+                    &quot;{item.reason}&quot;
                   </div>
                 </div>
               ))

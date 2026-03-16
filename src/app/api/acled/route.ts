@@ -2,9 +2,6 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-let ACLED_TOKEN: string | null = null;
-let TOKEN_EXPIRY: number = 0;
-
 const ACLED_EMAIL = process.env.ACLED_EMAIL;
 const ACLED_KEY = process.env.ACLED_KEY;
 
@@ -17,6 +14,19 @@ const EVENT_TYPE_MAP: Record<string, string> = {
   'Strategic developments': 'Movement'
 };
 
+interface ACLEDRawEvent {
+  event_id_cnty: string;
+  latitude: string;
+  longitude: string;
+  event_type: string;
+  notes: string;
+  source: string;
+  event_date: string;
+  country: string;
+  fatalities: string;
+  location: string;
+}
+
 export async function GET() {
   let incidents = [];
   
@@ -24,14 +34,13 @@ export async function GET() {
     const endDate = new Date().toISOString().split('T')[0];
     const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
-    // Direct Query Param Auth
     const url = `https://acleddata.com/api/acled/read?email=${encodeURIComponent(ACLED_EMAIL || '')}&key=${encodeURIComponent(ACLED_KEY || '')}&event_date=${startDate}|${endDate}&event_date_where=BETWEEN&limit=100`;
     
     const response = await fetch(url);
     const data = await response.json();
     
     if (data.data && Array.isArray(data.data)) {
-      incidents = data.data.map((event: any) => ({
+      incidents = data.data.map((event: ACLEDRawEvent) => ({
         id: event.event_id_cnty,
         lat: parseFloat(event.latitude),
         lng: parseFloat(event.longitude),
@@ -42,20 +51,17 @@ export async function GET() {
         timestamp: event.event_date,
         country: event.country,
         fatalities: parseInt(event.fatalities, 10) || 0,
-        url: `https://acleddata.com/dashboard/#/dashboard` // Fallback URL
+        url: `https://acleddata.com/dashboard/#/dashboard`
       }));
-    } else {
-      console.warn('ACLED API returned no data or error:', data);
     }
   } catch (e) {
     console.error('ACLED Route Error:', e);
   }
 
-  // Return whatever we found (could be empty if auth fails). NO FAKE DATA.
   return NextResponse.json(incidents);
 }
 
-function calculateSeverity(event: any): number {
+function calculateSeverity(event: ACLEDRawEvent): number {
   let score = 50;
   const fatalities = parseInt(event.fatalities, 10) || 0;
   if (fatalities > 0) score += 10;
