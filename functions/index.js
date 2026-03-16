@@ -80,20 +80,40 @@ exports.checkAlerts = onDocumentCreated("incidents/{incidentId}", async (event) 
 
 async function fetchGDELT() {
   try {
-    // Using the GDELT GeoJSON API V1
-    const response = await axios.get("https://api.gdeltproject.org/api/v1/gkg_geojson?QUERY=ARMEDCONFLICT&TIMESPAN=60");
-    
-    if (!response.data || !response.data.features) return [];
+    const themes = ['ARMEDCONFLICT', 'TERROR', 'PROTEST'];
+    const themeRequests = themes.map(theme => 
+      axios.get(`https://api.gdeltproject.org/api/v1/gkg_geojson?QUERY=${theme}&TIMESPAN=60`)
+        .then(res => res.data.features || [])
+        .catch(() => [])
+    );
 
-    return response.data.features.slice(0, 10).map(f => ({
-      source: "GDELT",
-      rawId: f.properties.url || Math.random().toString(),
-      text: f.properties.name,
-      lat: f.geometry.coordinates[1],
-      lng: f.geometry.coordinates[0],
-      timestamp: f.properties.urlpubtimedate || new Date().toISOString(),
-      country: f.properties.name || "Unknown"
-    }));
+    const results = await Promise.all(themeRequests);
+    const allFeatures = results.flat();
+    
+    if (allFeatures.length === 0) return [];
+
+    const seen = new Set();
+    const uniqueIncidents = [];
+
+    for (const f of allFeatures) {
+      const url = f.properties.url;
+      const text = f.properties.name;
+      const key = `${url}-${text}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueIncidents.push({
+          source: "GDELT",
+          rawId: url || Math.random().toString(),
+          text: text,
+          lat: f.geometry.coordinates[1],
+          lng: f.geometry.coordinates[0],
+          timestamp: f.properties.urlpubtimedate || new Date().toISOString(),
+          country: f.properties.name || "Unknown"
+        });
+      }
+    }
+
+    return uniqueIncidents.slice(0, 30); // Return a reasonable number for processing
   } catch (e) {
     logger.error("GDELT Fetch Error", e);
     return [];

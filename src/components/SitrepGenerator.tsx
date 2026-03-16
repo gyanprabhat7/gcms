@@ -42,7 +42,8 @@ export default function SitrepGenerator() {
     doc.text("CRITICAL INTELLIGENCE FEED", 15, 50);
 
     let y = 60;
-    const critical = incidents.filter(i => i.severity > 70).slice(0, 15);
+    // Sort by severity descending and take top 15 to ensure we have content
+    const critical = [...incidents].sort((a, b) => b.severity - a.severity).slice(0, 15);
 
     critical.forEach((incident, i) => {
       if (y > 280) {

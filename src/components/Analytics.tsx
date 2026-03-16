@@ -149,7 +149,14 @@ export default function Analytics({ incidents }: AnalyticsProps) {
             acc[i.country] = (acc[i.country] || 0) + 1;
             return acc;
           }, {})).sort((a: any, b: any) => b[1] - a[1]).slice(0, 10).map(([country, count]: any, idx) => (
-            <div key={country} className="flex justify-between items-center text-[10px] font-mono p-1 hover:bg-white/5 rounded cursor-default group">
+            <div 
+              key={country} 
+              className="flex justify-between items-center text-[10px] font-mono p-1 hover:bg-white/5 rounded cursor-pointer group"
+              onClick={() => {
+                const countryIncident = incidents.find(i => i.country === country);
+                if (countryIncident) selectIncident(countryIncident);
+              }}
+            >
               <span className="text-foreground group-hover:text-primary transition-colors">
                 {idx + 1}. {country}
               </span>
