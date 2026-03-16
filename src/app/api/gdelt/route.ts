@@ -15,6 +15,39 @@ function generateStableId(str: string) {
   return Math.abs(hash).toString(16);
 }
 
+function getTitleFromUrl(url: string): string | null {
+  try {
+    const path = new URL(url).pathname;
+    const segments = path.split('/').filter(Boolean);
+    const lastSegment = segments[segments.length - 1] || '';
+    
+    // Remove file extensions
+    const slug = lastSegment.replace(/\.[^/.]+$/, "");
+    
+    // If slug is too short or just numbers/hashes, ignore it
+    if (slug.length < 10 || /^\d+$/.test(slug)) return null;
+
+    // Convert slug (kebab-case or snake_case) to Title Case
+    return slug
+      .split(/[-_]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  } catch {
+    return null;
+  }
+}
+
+function getTacticalTitle(themes: string[], location: string): string {
+  if (themes.includes('TERROR')) return `Terrorist Activity Reported in ${location}`;
+  if (themes.includes('KIDNAP')) return `Abduction/Kidnapping event in ${location}`;
+  if (themes.includes('UNREST_CHECKPOINT')) return `Military Border Checkpoint Activity: ${location}`;
+  if (themes.includes('UNREST_STONETHROWING')) return `Civil Unrest / Violent Protest in ${location}`;
+  if (themes.includes('CRISISLEX_T03_FATALITIES')) return `Casualties Reported in ${location}`;
+  if (themes.includes('MILITARY')) return `Military Movement / Deployment in ${location}`;
+  
+  return `Armed Activity / Tactical Event: ${location}`;
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -48,17 +81,18 @@ export async function GET(request: Request) {
       if (url) {
         try {
           sourceName = new URL(url).hostname.replace('www.', '').toUpperCase();
-        } catch {
-          // Fallback to default
-        }
+        } catch {}
       }
 
       const themes = (f.properties.mentionedthemes || '').split(';').filter(Boolean);
-      const isConflict = themes.some((t: string) => t.includes('ARMEDCONFLICT') || t.includes('MILITARY'));
+      const isConflict = themes.some((t: string) => t.includes('ARMEDCONFLICT') || t.includes('MILITARY') || t.includes('TERROR'));
       
       if (!isConflict) continue;
 
-      const summary = `Armed conflict / Kinetic event reported in ${locationName}`;
+      // Logic: Prefer URL slug for actual headline, fallback to theme-based tactical title
+      const slugTitle = url ? getTitleFromUrl(url) : null;
+      const summary = slugTitle || getTacticalTitle(themes, locationName);
+
       const contentKey = `${url}-${summary}-${Math.round(lat * 100) / 100}-${Math.round(lng * 100) / 100}`;
 
       if (!seenContent.has(contentKey)) {
@@ -69,8 +103,8 @@ export async function GET(request: Request) {
           id: stableId,
           lat,
           lng,
-          type: 'Conflict',
-          severity: 70,
+          type: themes.includes('TERROR') ? 'Terror' : 'Conflict',
+          severity: themes.includes('TERROR') || themes.includes('FATALITIES') ? 85 : 70,
           summary: summary,
           source: sourceName,
           timestamp: f.properties.urlpubtimedate || new Date().toISOString(),

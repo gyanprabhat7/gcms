@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const appname = 'individual_research_meshwa2847O6bR3z2V';
+    const appname = process.env.RELIEFWEB_APP_NAME;
+    if (!appname) throw new Error('RELIEFWEB_APP_NAME is not set in environment variables.');
     const url = `https://api.reliefweb.int/v2/reports?appname=${appname}&limit=50&preset=latest&profile=full`;
 
     const response = await fetch(url);
@@ -12,8 +13,23 @@ export async function GET() {
 
     const data = await response.json();
     
+    interface ReliefWebReport {
+      id: number;
+      fields: {
+        primary_country?: {
+          name: string;
+          location?: { lat: number; lon: number };
+        };
+        format?: { name: string }[];
+        title: string;
+        headline?: { title: string };
+        date: { created: string; changed: string };
+        url: string;
+      };
+    }
+
     // Map ReliefWeb reports to our Incident interface
-    const incidents = (data.data || []).map((report: any) => {
+    const incidents = (data.data || []).map((report: ReliefWebReport) => {
       const fields = report.fields;
       
       // Verified structure: fields.primary_country.location.lat/lon
@@ -31,7 +47,7 @@ export async function GET() {
         country: primaryCountry?.name || 'Unknown',
         url: fields.url,
       };
-    }).filter((i: any) => i.lat !== 0 && i.lng !== 0);
+    }).filter((i: { lat: number; lng: number }) => i.lat !== 0 && i.lng !== 0);
 
     return NextResponse.json(incidents);
   } catch (error) {

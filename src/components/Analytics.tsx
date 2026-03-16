@@ -1,7 +1,7 @@
 'use client';
 
 import { Activity, Skull, Target, Zap, ShieldAlert, TrendingUp } from 'lucide-react';
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Incident } from '@/lib/api-client';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import SitrepGenerator from './SitrepGenerator';
@@ -43,30 +43,49 @@ function StatCard({ label, value, subtext, icon: Icon, color = "primary", trend 
 }
 
 export default function Analytics({ incidents }: AnalyticsProps) {
-  const { selectIncident } = useStore();
+  const selectIncident = useStore((state) => state.selectIncident);
+  const timeframe = useStore((state) => state.timeframe);
+  const [cutoffTime, setCutoffTime] = useState(0);
+
+  useEffect(() => {
+    let hours = 24;
+    if (timeframe.endsWith('H')) hours = parseInt(timeframe, 10);
+    else if (timeframe.endsWith('D')) hours = parseInt(timeframe, 10) * 24;
+    
+    const handle = requestAnimationFrame(() => {
+      setCutoffTime(Date.now() - (hours * 60 * 60 * 1000));
+    });
+    return () => cancelAnimationFrame(handle);
+  }, [timeframe]);
 
   const stats = useMemo(() => {
     if (!incidents || incidents.length === 0) return null;
 
-    const totalEvents = incidents.length;
-    const totalFatalities = incidents.reduce((acc, curr) => acc + (curr.fatalities || 0), 0);
-    const criticalEvents = incidents.filter(i => i.severity > 80).length;
+    const filteredIncidents = incidents.filter(i => 
+      new Date(i.timestamp).getTime() >= cutoffTime
+    );
+
+    if (filteredIncidents.length === 0) return null;
+
+    const totalEvents = filteredIncidents.length;
+    const totalFatalities = filteredIncidents.reduce((acc, curr) => acc + (curr.fatalities || 0), 0);
+    const criticalEvents = filteredIncidents.filter(i => i.severity > 80).length;
     
     const countryCount: Record<string, number> = {};
-    incidents.forEach(i => { 
+    filteredIncidents.forEach(i => { 
       if (i.country) countryCount[i.country] = (countryCount[i.country] || 0) + 1; 
     });
     
     const sortedCountries = Object.keys(countryCount).sort((a, b) => countryCount[b] - countryCount[a]);
     const topCountry = sortedCountries[0] || "N/A";
 
-    const trendData = incidents.slice(0, 20).reverse().map((i, idx) => ({
+    const trendData = filteredIncidents.slice(0, 20).reverse().map((i, idx) => ({
       idx,
       sev: i.severity || 50
     }));
 
-    return { totalEvents, totalFatalities, criticalEvents, topCountry, trendData, countryCount };
-  }, [incidents]);
+    return { totalEvents, totalFatalities, criticalEvents, topCountry, trendData, countryCount, filteredIncidents };
+  }, [incidents, cutoffTime]);
 
   if (!stats) return (
      <aside className="h-full w-full bg-background/95 border-l border-border flex flex-col items-center justify-center text-muted-foreground text-xs font-mono">
@@ -86,7 +105,7 @@ export default function Analytics({ incidents }: AnalyticsProps) {
 
       <div className="grid grid-cols-2 gap-2">
         <StatCard label="KIAs" value={stats.totalFatalities} subtext="ESTIMATED" icon={Skull} color="alert" />
-        <StatCard label="Events" value={stats.totalEvents} subtext="24H WINDOW" icon={Activity} color="primary" trend="+12%" />
+        <StatCard label="Events" value={stats.totalEvents} subtext={`${timeframe} WINDOW`} icon={Activity} color="primary" trend="+12%" />
         <StatCard label="Critical" value={stats.criticalEvents} subtext=">80 SEV" icon={ShieldAlert} color="alert" />
         <StatCard label="Primary" value={stats.topCountry.slice(0, 8)} subtext="THEATER" icon={Target} color="secondary" />
       </div>
@@ -116,7 +135,7 @@ export default function Analytics({ incidents }: AnalyticsProps) {
               key={country} 
               className="flex justify-between items-center text-[10px] font-mono p-1 hover:bg-white/5 rounded cursor-pointer group"
               onClick={() => {
-                const countryIncident = incidents.find(i => i.country === country);
+                const countryIncident = stats.filteredIncidents.find(i => i.country === country);
                 if (countryIncident) selectIncident(countryIncident);
               }}
             >

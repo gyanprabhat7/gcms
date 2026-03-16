@@ -18,7 +18,8 @@ export async function getOrCreateUserProfile(user: User): Promise<UserProfile | 
   const userSnap = await getDoc(userRef);
 
   if (userSnap.exists()) {
-    await setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true });
+    // Fire-and-forget the timestamp update so it doesn't block the UI load
+    setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(console.error);
     return userSnap.data() as UserProfile;
   } else {
     const newProfile: UserProfile = {

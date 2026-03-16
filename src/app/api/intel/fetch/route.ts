@@ -1,96 +1,106 @@
 import { NextResponse } from 'next/server';
+import { JSDOM } from 'jsdom';
+import { Readability } from '@mozilla/readability';
+import TurndownService from 'turndown';
 
-function decodeHTMLEntities(text: string): string {
-  if (!text) return '';
-
-  const entities: Record<string, string> = {
-    '&quot;': '"', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&nbsp;': ' ',
-    '&apos;': "'", '&rsquo;': "'", '&lsquo;': "'", '&ldquo;': '"', '&rdquo;': '"',
-    '&mdash;': '-', '&ndash;': '-', '&hellip;': '...',
-    '&aacute;': 'á', '&eacute;': 'é', '&iacute;': 'í', '&oacute;': 'ó', '&uacute;': 'ú',
-    '&Aacute;': 'Á', '&Eacute;': 'É', '&Iacute;': 'Í', '&Oacute;': 'Ó', '&Uacute;': 'Ú',
-    '&atilde;': 'ã', '&otilde;': 'õ', '&Atilde;': 'Ã', '&Otilde;': 'Õ',
-    '&acirc;': 'â', '&ecirc;': 'ê', '&icirc;': 'î', '&ocirc;': 'ô', '&ucirc;': 'û',
-    '&Agrave;': 'À', '&Egrave;': 'È', '&Igrave;': 'Ì', '&Ograve;': 'Ò', '&Ugrave;': 'Ù',
-    '&agrave;': 'à', '&egrave;': 'è', '&igrave;': 'ì', '&ograve;': 'ò', '&ugrave;': 'ù',
-    '&ccedil;': 'ç', '&Ccedil;': 'Ç', '&ntilde;': 'ñ', '&Ntilde;': 'Ñ',
-    '&auml;': 'ä', '&euml;': 'ë', '&iuml;': 'ï', '&ouml;': 'ö', '&uuml;': 'ü',
-    '&deg;': '°', '&copy;': '©', '&reg;': '®', '&trade;': '™',
-    '&laquo;': '«', '&raquo;': '»', '&iexcl;': '¡', '&iquest;': '¿'
-  };
-
-  return text
-    .replace(/&#(\d+);/g, (_, dec) => {
-      const char = String.fromCharCode(dec);
-      // Special handling for smart quotes if charCode doesn't match directly
-      if (dec === 8217 || dec === 8216) return "'";
-      if (dec === 8220 || dec === 8221) return '"';
-      return char;
-    })
-    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => {
-      return String.fromCharCode(parseInt(hex, 16));
-    })
-    .replace(/&[a-z0-9]+;/gi, (match) => {
-      return entities[match] || match;
-    });
-}
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',
+  'Mozilla/5.0 (Apple) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edge/121.0.0.0'
+];
 
 export async function POST(req: Request) {
   try {
     const { url } = await req.json();
     if (!url) return NextResponse.json({ error: 'URL required' }, { status: 400 });
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-      },
-      next: { revalidate: 3600 }
-    });
+    let response: Response | null = null;
+    let lastError: Error | null = null;
+    const maxRetries = 3;
 
-    if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.status}`);
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const randomUA = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+        response = await fetch(url, {
+          headers: {
+            'User-Agent': randomUA,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+          },
+          next: { revalidate: 3600 }
+        });
+
+        if (response.ok) break;
+        if (response.status === 403 || response.status === 429) {
+          // Wait longer on rate limits
+          await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+          continue;
+        }
+        break; // Other errors don't retry for now
+    } catch (err) {
+      lastError = err as Error;
+      await new Promise(r => setTimeout(r, 500 * (i + 1)));
+    }
+    }
+
+    if (!response || !response.ok) {
+        throw new Error(`Failed to fetch: ${response?.status || lastError?.message || 'Unknown error'}`);
     }
 
     const html = await response.text();
     
-    // REMOVED 's' flag to fix ts(1501). [\\s\\S] already handles multiline.
-    let processed = html
-      .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gm, '')
-      .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gm, '')
-      .replace(/<header\b[^>]*>([\s\S]*?)<\/header>/gm, '')
-      .replace(/<footer\b[^>]*>([\s\S]*?)<\/footer>/gm, '')
-      .replace(/<nav\b[^>]*>([\s\S]*?)<\/nav>/gm, '')
-      .replace(/<aside\b[^>]*>([\s\S]*?)<\/aside>/gm, '');
+    // Strip <style> and <link> tags from the raw HTML string before giving it to JSDOM.
+    // This prevents fatal CSS parsing crashes (e.g. TypeError: Cannot create property 'border-width') 
+    // when JSDOM encounters malformed external stylesheets or inline blocks.
+    const cleanHtml = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+                          .replace(/<link\b[^>]*rel="stylesheet"[^>]*>/gi, '');
 
-    processed = processed
-      .replace(/<(p|div|h[1-6]|li|tr|br)[^>]*>/gi, '\n')
-      .replace(/<[^>]+>/g, ' '); 
+    // Create a virtual DOM, but disable scripts and stylesheets to prevent parser crashes
+    // on malformed external CSS blocks (e.g. TypeError: Cannot create property 'border-width').
+    const dom = new JSDOM(cleanHtml, { url });
+    
+    // Use Mozilla Readability to extract the core content
+    const reader = new Readability(dom.window.document);
+    const article = reader.parse();
 
-    processed = decodeHTMLEntities(processed);
+    if (!article || !article.content) {
+      return NextResponse.json({ 
+        content: 'No readable content could be extracted from this source.',
+        length: 0
+      });
+    }
 
-    const cleanText = processed
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
-      .join('\n\n');
-
-    const filteredLines = cleanText.split('\n\n').filter(para => {
-      return para.length > 40 || (para.length > 10 && !para.includes('|'));
+    // Convert the extracted HTML to Markdown
+    const turndownService = new TurndownService({
+      headingStyle: 'atx',
+      codeBlockStyle: 'fenced',
+      hr: '---'
     });
 
-    let finalContent = filteredLines.join('\n\n').slice(0, 8000);
+    // Remove unwanted elements from the Markdown conversion if needed
+    turndownService.remove(['script', 'style', 'noscript', 'iframe', 'header', 'footer', 'nav', 'aside']);
 
-    if (finalContent.includes('Enable JavaScript and cookies to continue') || finalContent.includes('Just a moment...')) {
-      finalContent = "SECURE CONNECTION BLOCKED: Target server requires JavaScript/Captcha validation. Cannot extract raw intel automatically.\n\nPlease use the 'View Original Source' button.";
+    let markdown = turndownService.turndown(article.content);
+
+    // Clean up excessive newlines
+    markdown = markdown.replace(/\n{3,}/g, '\n\n').trim();
+
+    // Check for blocking messages
+    if (markdown.includes('Enable JavaScript and cookies to continue') || markdown.includes('Just a moment...')) {
+      markdown = "SECURE CONNECTION BLOCKED: Target server requires JavaScript/Captcha validation. Cannot extract raw intel automatically.\n\nPlease use the 'View Original Source' button.";
     }
 
     return NextResponse.json({ 
-      content: finalContent || 'No readable content extracted.',
-      length: finalContent.length
+      content: markdown,
+      title: article.title,
+      length: markdown.length
     });
   } catch (error) {
     console.error('Intel fetch failed:', error);
-    return NextResponse.json({ error: 'Failed to fetch raw intel' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch and process intel' }, { status: 500 });
   }
 }

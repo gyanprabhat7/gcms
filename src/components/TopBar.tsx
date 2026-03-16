@@ -6,6 +6,7 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { toast } from 'sonner';
 
 export default function TopBar() {
   const { theme, setTheme } = useTheme();
@@ -52,7 +53,7 @@ export default function TopBar() {
             {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
         )}
-        <button className="p-2 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary relative group">
+        <button onClick={() => toast('Global Threat Matrix is operating within normal parameters.')} className="p-2 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary relative group">
           <AlertTriangle className="w-5 h-5" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-alert rounded-full animate-ping"></span>
         </button>
@@ -73,8 +74,8 @@ export default function TopBar() {
                   <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
                 </div>
                 <div className="p-1">
-                  <button className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-primary/10 text-muted-foreground hover:text-primary rounded transition-colors text-left"><Settings className="w-4 h-4" /> System Preferences</button>
-                  <button className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-primary/10 text-muted-foreground hover:text-primary rounded transition-colors text-left"><Key className="w-4 h-4" /> API Credentials</button>
+                  <button onClick={() => { setMenuOpen(false); toast("System Preferences panel is locked by higher authority command."); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-primary/10 text-muted-foreground hover:text-primary rounded transition-colors text-left"><Settings className="w-4 h-4" /> System Preferences</button>
+                  <button onClick={() => { setMenuOpen(false); toast("API Token Rotation module offline."); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-primary/10 text-muted-foreground hover:text-primary rounded transition-colors text-left"><Key className="w-4 h-4" /> API Credentials</button>
                   <div className="h-px bg-border my-1"></div>
                   <button onClick={logout} className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-alert/10 text-alert rounded transition-colors text-left"><LogOut className="w-4 h-4" /> Secure Logout</button>
                 </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import dynamic from 'next/dynamic';
 import Sidebar from '@/components/Sidebar';
 import TopBar from '@/components/TopBar';
@@ -11,27 +11,31 @@ import EscalationIndex from '@/components/EscalationIndex';
 import EconomicImpact from '@/components/EconomicImpact';
 import { fetchLiveIncidents } from '@/lib/api-client';
 import { useStore } from '@/lib/store';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, RefreshCw } from 'lucide-react';
 
-const Map = dynamic(() => import('@/components/Map'), { ssr: false });
+const MapComponent = dynamic(() => import('@/components/Map'), { ssr: false });
+const MemoizedMap = memo(MapComponent);
 
 export default function Home() {
-  const { incidents, mergeIncidents } = useStore();
+  const incidents = useStore((state) => state.incidents);
+  const mergeIncidents = useStore((state) => state.mergeIncidents);
+  const isFetchingIntel = useStore((state) => state.isFetchingIntel);
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
     async function loadData() {
-      // Fetch 24 hours on first load, then only fetch the last 15 minutes of data on subsequent polls
-      const timespan = isInitialLoad.current ? 1440 : 15;
-      const data = await fetchLiveIncidents(timespan);
-      
-      // Merge unique data instead of blindly overwriting
-      mergeIncidents(data);
-      isInitialLoad.current = false;
+      try {
+        const timespan = isInitialLoad.current ? 1440 : 15;
+        const data = await fetchLiveIncidents(timespan);
+        mergeIncidents(data);
+        isInitialLoad.current = false;
+      } catch (err) {
+        console.error('Failed to load incidents', err);
+      }
     }
     
     loadData();
-    
-    // Check for updates every 60 seconds (5 seconds is too aggressive and will get you IP banned by APIs)
     const interval = setInterval(loadData, 60000);
     return () => clearInterval(interval);
   }, [mergeIncidents]);
@@ -59,7 +63,7 @@ export default function Home() {
                    <EscalationIndex incidents={incidents} />
                 </div>
              </div>
-             <Map />
+             <MemoizedMap />
           </div>
 
           {/* Right Panel - Analytics */}
@@ -68,6 +72,47 @@ export default function Home() {
           </div>
 
         </main>
+
+        {/* Global Data Fetching Indicator Overlay */}
+        <AnimatePresence>
+          {isFetchingIntel && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-[2px] pointer-events-none"
+            >
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="flex flex-col items-center gap-4 p-8 rounded-sm border border-primary/30 bg-background/90 shadow-[0_0_50px_rgba(0,240,255,0.1)] backdrop-blur-xl"
+              >
+                <div className="relative">
+                  <Shield className="w-12 h-12 text-primary animate-pulse" />
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="absolute -inset-2 border-t-2 border-primary rounded-full opacity-50"
+                  />
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-primary font-mono text-[10px] tracking-[0.3em] uppercase animate-pulse">Sentinel Link Active</span>
+                  <span className="text-muted-foreground font-mono text-[8px] tracking-widest uppercase mt-1">Syncing Tactical Intel Datastreams</span>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <RefreshCw className="w-3 h-3 text-secondary animate-spin" />
+                  <div className="h-[2px] w-24 bg-border relative overflow-hidden">
+                    <motion.div 
+                      animate={{ left: ['-100%', '100%'] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      className="absolute top-0 bottom-0 w-1/3 bg-secondary shadow-[0_0_8px_var(--neon-blue)]"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* AI Chat Bot */}
         <TacticalChat />
