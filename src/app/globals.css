@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
   /* Sentinel Semantic Tokens */
@@ -60,8 +61,8 @@
   border: 1px solid var(--neon-blue-dim);
 }
 
-:root {
-  /* Default: Sentinel Dark (No Light Mode for Classified Ops) */
+:root, .dark {
+  /* Default: Sentinel Dark */
   --void-black: #050505;
   --clean-slate: #E2E8F0;
   --glass-panel: rgba(10, 15, 20, 0.75);
@@ -71,11 +72,23 @@
   --alert-red: #FF2A2A;
 }
 
+.light {
+  /* Refined Light Mode Palette - More legibility, less strain */
+  --void-black: #F1F5F9;
+  --clean-slate: #0F172A;
+  --glass-panel: rgba(255, 255, 255, 0.85);
+  --neon-blue: #0369A1;      /* Sky 700 */
+  --neon-blue-dim: rgba(3, 105, 161, 0.15);
+  --tactical-teal: #15803D;  /* Green 700 */
+  --alert-red: #BE123C;      /* Rose 700 */
+}
+
 body {
   background: var(--void-black);
   color: var(--clean-slate);
-  font-family: 'Geist Mono', monospace; /* Default to Monospace for Tactical Feel */
-  overflow: hidden; 
+  font-family: 'Geist Mono', monospace;
+  overflow: hidden;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 /* Tactical Grid Background */
@@ -106,12 +119,27 @@ body {
   font-family: inherit;
 }
 .leaflet-popup-content-wrapper {
-  background: rgba(5, 5, 5, 0.9);
-  border: 1px solid var(--neon-blue);
-  color: var(--clean-slate);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
   border-radius: 0;
-  backdrop-filter: blur(4px);
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: auto !important;
+}
+.leaflet-popup-tip-container {
+  display: block !important;
+  margin-top: -1px; /* Overlap the neon border */
 }
 .leaflet-popup-tip {
-  background: var(--neon-blue);
+  background: var(--neon-blue) !important;
+  border: none !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
+  width: 14px !important;
+  height: 14px !important;
+  padding: 1px !important;
+  margin: -7px auto 0 !important;
 }

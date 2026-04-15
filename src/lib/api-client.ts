@@ -17,100 +17,63 @@ export interface Incident {
   actor2?: string;
 }
 
-// STRICT: English only, high-confidence conflict events, last 24h
-const GDELT_API = "https://api.gdeltproject.org/api/v2/geo/geo?query=theme:ARMEDCONFLICT sourcelang:eng&format=geojson&timespan=24h";
+interface ACLEDCSVRow {
+  event_id_cnty: string;
+  latitude: string;
+  longitude: string;
+  event_type: string;
+  notes: string;
+  location: string;
+  event_date: string;
+  country: string;
+  fatalities: string;
+  actor1: string;
+  actor2: string;
+}
 
-export const fetchLiveIncidents = async (): Promise<Incident[]> => {
+export const fetchLiveIncidents = async (timespan: number = 1440): Promise<Incident[]> => {
   try {
-    const [gdeltData, acledData] = await Promise.all([
-      fetchGDELT(),
-      fetchACLEDProxy()
+    const [gdeltData, acledData, reliefWebData] = await Promise.all([
+      fetchGDELTProxy(timespan),
+      fetchACLEDProxy(),
+      fetchReliefWebProxy()
     ]);
 
-    // Combine and Sort by most recent
-    return [...acledData, ...gdeltData].sort(
+    return [...acledData, ...gdeltData, ...reliefWebData].sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
   } catch (error) {
     console.error("Error fetching live incidents:", error);
-    return []; // RETURN EMPTY if fail. No fake data.
+    return []; 
   }
 };
 
 async function fetchACLEDProxy(): Promise<Incident[]> {
-  try {
-    const res = await fetch('/api/acled');
-    if (!res.ok) return [];
-    const data = await res.json();
-    if (data.error || !Array.isArray(data)) return [];
-    return data;
-  } catch (e) {
-    console.warn("ACLED Proxy fetch failed.", e);
-    return []; // No simulation fallback
-  }
+  const res = await fetch('/api/acled');
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
 }
 
-async function fetchGDELT(): Promise<Incident[]> {
-  try {
-    const res = await fetch(GDELT_API);
-    const data = await res.json();
-    
-    if (!data.features) return [];
+async function fetchGDELTProxy(timespan: number): Promise<Incident[]> {
+  const res = await fetch(`/api/gdelt?timespan=${timespan}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
 
-    return data.features.map((f: any) => {
-      // GDELT GeoJSON 'name' is often the location/country.
-      const locationName = f.properties.name || "Unknown Location";
-      
-      // Extract summary and URL from HTML snippet
-      let summary = locationName;
-      let url = f.properties.url; // Default URL
-      let sourceName = "GDELT";
-
-      if (f.properties.html) {
-        // Extract Title
-        const titleMatch = f.properties.html.match(/title="([^"]+)"/);
-        if (titleMatch) summary = titleMatch[1];
-        
-        // Extract URL (Robust)
-        const urlMatch = f.properties.html.match(/href="([^"]+)"/);
-        if (urlMatch) url = urlMatch[1];
-
-        // Attempt to extract domain as source name
-        if (url) {
-          try {
-            const domain = new URL(url).hostname.replace('www.', '');
-            sourceName = domain.toUpperCase();
-          } catch (e) {}
-        }
-      }
-
-      // Filter out non-English looking summaries (heuristic) if API filter leaks
-      // (Simple check: if contains mostly non-ascii, skip? GDELT API 'sourcelang:eng' usually handles this)
-
-      return {
-        id: `gdelt-${f.properties.url || Math.random().toString(36).substr(2, 9)}`,
-        lat: f.geometry.coordinates[1],
-        lng: f.geometry.coordinates[0],
-        type: 'Conflict',
-        severity: 50, // Baseline for GDELT
-        summary: summary,
-        source: sourceName,
-        timestamp: new Date().toISOString(),
-        country: locationName,
-        url: url
-      };
-    });
-  } catch (e) {
-    console.warn("GDELT fetch failed", e);
-    return [];
-  }
+async function fetchReliefWebProxy(): Promise<Incident[]> {
+  const res = await fetch('/api/reliefweb');
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
 }
 
 export const parseACLEDCSV = (csvContent: string): Incident[] => {
-  const results = Papa.parse(csvContent, { header: true, skipEmptyLines: true });
+  const results = Papa.parse<ACLEDCSVRow>(csvContent, { header: true, skipEmptyLines: true });
   
-  return results.data.map((row: any) => ({
-    id: row.event_id_cnty || `acled-${Math.random()}`,
+  return results.data.map((row) => ({
+    id: row.event_id_cnty || `acled-csv-${Math.random().toString(36).substring(2, 9)}`,
     lat: parseFloat(row.latitude),
     lng: parseFloat(row.longitude),
     type: row.event_type || 'Conflict',
@@ -123,11 +86,11 @@ export const parseACLEDCSV = (csvContent: string): Incident[] => {
     notes: row.notes,
     actor1: row.actor1,
     actor2: row.actor2,
-    url: `https://acleddata.com/dashboard/#/dashboard` // Fallback for CSV
+    url: `https://acleddata.com/dashboard/#/dashboard` 
   })).filter(i => !isNaN(i.lat) && !isNaN(i.lng));
 };
 
-function calculateACLEDSeverity(row: any): number {
+function calculateACLEDSeverity(row: ACLEDCSVRow): number {
   let score = 50;
   const fats = parseInt(row.fatalities, 10) || 0;
   if (fats > 0) score += 15;

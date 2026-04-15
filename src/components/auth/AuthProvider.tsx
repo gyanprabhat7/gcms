@@ -28,20 +28,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      // Immediately unblock the loading screen — the app renders while profile loads in background
+      setLoading(false);
+
       if (currentUser) {
-        // Fetch Firestore Profile
-        try {
-          const userProfile = await getOrCreateUserProfile(currentUser);
-          setProfile(userProfile);
-        } catch (e) {
-          console.error("Profile Fetch Error", e);
-        }
+        // Fetch Firestore profile asynchronously without blocking UI
+        getOrCreateUserProfile(currentUser)
+          .then(setProfile)
+          .catch((e) => console.error("Profile Fetch Error", e));
       } else {
         setProfile(null);
       }
-      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
